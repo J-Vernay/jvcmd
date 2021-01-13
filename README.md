@@ -11,7 +11,7 @@ If this library is useful for you, please give me feedback. =)
 
 ## Examples
 From `<examples/calc.h>`:
-```
+```c
 int main(int argc, char** argv) {
     jvArgument integer_option = { "int", "Values are considered as int.", 'i' };
     jvArgument sentence_option = { "sentence", "Will print a sentence instead of the raw result.", 's' };
