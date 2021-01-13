@@ -30,6 +30,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/*
+You need to use jvcmd_parse_arguments to parse the command-line arguments (argc, argv).
+It accepts a jvParsingConfig structure, which contains the configuration for the parsing.
+Most importantly, it will need two lists of pointers to jvArgument.
+Theses lists must be NULL-terminated (the last element of the list is NULL/nullptr).
+Theses lists are 'options' and 'pos_args' (short for positional arguments).
+OPTIONS:
+    Traditionally passed as --my-option, -o/some/file, etc
+    Semantically, they modify the behaviour of the program, or expose information (such as --help, --version, etc).
+POSITIONAL ARGUMENTS:
+    Must be passed in order. Semantics depends on the program.
+    Example with apt-cache: apt-cache <ACTION> <PACKAGE_NAME>
+
+jvArgument describes either an option or a positional argument.
+You can use C99 designated-initializers to only specify what you need,
+and let the other members be zero-initialized.
+In C++, without designated initializers, you can default-initialize it.
+Then manually specify what you need.
+See also "calc.c" and "filetree.cpp" in jvcmd's examples.
+*/
+
 #ifndef JV_CMD
 #define JV_CMD
 
@@ -38,7 +59,7 @@ SOFTWARE.
 struct jvParsingConfig;
 
 typedef struct jvArgument {
-    /* CONFIG: These fields will be read, each field can be zero-initialized. */
+    /* CONFIG: These fields will be read, each unused field must be zero-initialized. */
     char const* name;           /* long name */
     char const* help;           /* description of the message */
     char        short_name;     /* short name, 0 if no short name */
@@ -56,12 +77,12 @@ typedef struct jvArgument {
     void* userdata; /* Not used by the library, intended for 'action' callback */
     void (*action) (struct jvParsingConfig* config, struct jvArgument* argument); /* Called after OUTPUT values are written to. NULL if nothing to do. */
     
-    /* OUTPUT: These fields will be written to. */
-    char const* value;     /* Value specified by the user, NULL if option not specified, "" if need_value = 0 and was specified */
-    bool        specified; /* 1 if value specified by the user, 0 else.  */
-    int         as_int;    /* Value converted as integer if is_int = 1, else it is set to 0. */
-    float       as_float;  /* Value converted as float if is_float = 1, else it is set to 0. */
-    bool        as_bool;   /*if need_value = 1, conversion to true/false, */
+    /* OUTPUT: These fields will be written to. They must all be initialized to 0 */
+    char const* value;     /* Value specified by the user, NULL if option not specified, "" if need_value=true and was specified */
+    bool        specified; /* true if value specified by the user.  */
+    int         as_int;    /* Value converted as integer if is_int = 1. */
+    float       as_float;  /* Value converted as float if is_float = 1. */
+    bool        as_bool;   /* Value converted as boolean if is_bool = 1. */
 } jvArgument;
 
 typedef struct jvParsingConfig {
@@ -80,7 +101,8 @@ typedef struct jvParsingConfig {
     char const* options_prefix;  /* if NULL, "--" is used */
     char const* no_more_options; /* next arguments are only positional. if NULL, "--" is used */
     jvArgument* const* options;  /* options, must be NULL-terminated */
-    jvArgument* const* pos_args; /* positional arguments, must be NULL-terminated. 'short_name', 'required' and 'need_value' are ignored. */
+    jvArgument* const* pos_args; /* positional arguments, must be NULL-terminated.
+                                    'short_name', 'required' and 'need_value' are ignored for positional args. */
     int nb_pos_args_required;    /* number of positional arguments required as minimum */        
     
     char const* true_synonyms; /* space-delimited true-ish values for boolean arguments, if NULL "1 true True TRUE y Y yes Yes YES" is used */

@@ -59,11 +59,11 @@ USAGE: ./calc [--int|-i] [--sentence|-s] [--] <operation> <left-value> <right-va
 
 >>> ./calc a b c
 ERROR!
-USAGE: ./calc [--int|-i] [--sentence|-s] [--] <operation> <left-value> <right-value> 
-Invalid value for option --operation, 'a' is not in 'add sub mult div'.
+USAGE: ./calc [int|-i] [sentence|-s] [--] <operation> <left-value> <right-value> 
+Invalid value for option 'operation', 'a' is not in 'add sub mult div'.
 Type './calc --help' for more information.
 
->>> ./calc add 2 
+>>> ./calc add 2
 ERROR!
 USAGE: ./calc [--int|-i] [--sentence|-s] [--] <operation> <left-value> <right-value> 
 At least 3 positional arguments are required, but you gave 2 arguments.

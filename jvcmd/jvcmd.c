@@ -297,7 +297,7 @@ static void check_convert_value(jvParsingConfig* config, jvArgument* arg) {
             arg->value = arg->default_value;
             arg->specified = true;
         } else if (arg->required) {
-            jvcmd_exit_with_error(config, "Option %s%s is required but you did not specify it.", config->options_prefix, arg->name);
+            jvcmd_exit_with_error(config, "Option '%s%s' is required but you did not specify it.", config->options_prefix, arg->name);
         }else {
             return;
         }
@@ -308,7 +308,7 @@ static void check_convert_value(jvParsingConfig* config, jvArgument* arg) {
             bool is_allowed = is_in_space_delimited_list(StrView_make(arg->value), arg->allowed_values);
             
             if (!is_allowed)
-                jvcmd_exit_with_error(config, "Invalid value for option %s%s, '%s' is not in '%s'.",
+                jvcmd_exit_with_error(config, "Invalid value for option '%s%s', '%s' is not in '%s'.",
                                           config->options_prefix, arg->name, arg->value, arg->allowed_values);
         }
         char const* begin = arg->value;
@@ -321,10 +321,10 @@ static void check_convert_value(jvParsingConfig* config, jvArgument* arg) {
             char* end;
             long value = strtol(begin, &end, 0);
             if (begin == end)
-                jvcmd_exit_with_error(config, "Invalid value for option %s%s, '%s' is not an integer.",
+                jvcmd_exit_with_error(config, "Invalid value for option '%s%s', '%s' is not an integer.",
                                           config->options_prefix, arg->name, arg->value);
             if (errno == ERANGE || value > int_max || value < int_min)
-                jvcmd_exit_with_error(config, "Invalid value for option %s%s, '%s' is out of range. (min value: %d, max value: %d)",
+                jvcmd_exit_with_error(config, "Invalid value for option '%s%s', '%s' is out of range. (min value: %d, max value: %d)",
                                           config->options_prefix, arg->name, arg->value, int_min, int_max);
             arg->as_int = (int)value;
         }
@@ -333,7 +333,7 @@ static void check_convert_value(jvParsingConfig* config, jvArgument* arg) {
             float value = strtof(begin, &end);
             // if either limits or value is NaN, error
             if (!(arg->float_min == arg->float_max) && (value < arg->float_min || value > arg->float_max)) 
-                jvcmd_exit_with_error(config, "Invalid value for option %s%s, '%s' is out of range. (min value: %f, max value: %f)",
+                jvcmd_exit_with_error(config, "Invalid value for option '%s%s', '%s' is out of range. (min value: %f, max value: %f)",
                                           config->options_prefix, arg->name, arg->value, arg->float_min, arg->float_max);
             arg->as_float = value;
         }
@@ -416,7 +416,14 @@ void jvcmd_parse_arguments(int argc, char** argv, jvParsingConfig config) {
     if (argument_pos < config.nb_pos_args_required)
         jvcmd_exit_with_error(&config, "At least %d positional arguments are required, but you gave %d arguments.", config.nb_pos_args_required, argument_pos);
     
-    for_all_arguments(&config, &check_convert_value);
+    jvArgument* const* options = config.options;
+    for (jvArgument* option; (option = *options) != NULL; ++options)
+        check_convert_value(&config, option);
+        
+    config.options_prefix = ""; // remove option prefix for positional arguments error messages.
+    jvArgument* const* pos_args = config.pos_args;
+    for (jvArgument* arg; (arg = *pos_args) != NULL; ++pos_args)
+        check_convert_value(&config, arg);
 }
 
 
