@@ -1,4 +1,4 @@
-# jvcmd: Command-line arguments parsing in C9
+# jvcmd: Command-line arguments parsing in C99
 
 **jvcmd** is a C99 library to parse command-line arguments. Its aim is to be readable and simple.
 It is licensed under the MIT license, please see the "Building and Licensing" paragraph.
