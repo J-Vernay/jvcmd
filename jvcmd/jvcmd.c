@@ -144,6 +144,7 @@ void jvcmd_exit_with_help(jvParsingConfig const* config) {
         printf("%*s %s\n", nb_padding, "", option->help);
     }
     
+    puts("");
     if (config->epilog != NULL)
         puts(config->epilog);
     
@@ -359,6 +360,8 @@ static void set_actual_need_value(jvParsingConfig* config, jvArgument* arg, bool
 }
 
 void jvcmd_parse_arguments(int argc, char** argv, jvParsingConfig config) {
+    static jvArgument* const null_arg = NULL;
+
     if (config.program_name == NULL) {
         config.program_name = argv[0];
         argc -= 1;
@@ -370,6 +373,8 @@ void jvcmd_parse_arguments(int argc, char** argv, jvParsingConfig config) {
     SET_IF_NULL(config.no_more_options, "--");
     SET_IF_NULL(config.true_synonyms, "1 true True TRUE y Y yes Yes YES");
     SET_IF_NULL(config.false_synonyms, "0 false False FALSE n N no No NO");
+    SET_IF_NULL(config.options, &null_arg);
+    SET_IF_NULL(config.pos_args, &null_arg);
     
     StrView short_opt_prefix = StrView_make(config.short_options_prefix);
     StrView opt_prefix = StrView_make(config.options_prefix);
