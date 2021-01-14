@@ -211,7 +211,6 @@ static int check_short_options(char** argv, StrView prefix, jvParsingConfig cons
         return 0;
     jvstr_split(&arg, 0, prefix.size); // discard prefix
     
-    char c;
     bool chained_short_names = false;
     while (arg.size > 0) {
         char c = arg.begin[0];
@@ -281,13 +280,13 @@ static bool is_in_space_delimited_list(StrView value, char const* values) {
     return false;
 }
 
-static void for_all_arguments(jvParsingConfig* config, void(*func)(jvParsingConfig* config, jvArgument* arg)) {
+static void for_all_arguments(jvParsingConfig* config, void(*func)(jvParsingConfig* config, jvArgument* arg, bool is_pos_arg)) {
     jvArgument* const* options = config->options;
     for (jvArgument* option; (option = *options) != NULL; ++options)
-        (*func)(config, option);
+        (*func)(config, option, false);
     jvArgument* const* pos_args = config->pos_args;
     for (jvArgument* arg; (arg = *pos_args) != NULL; ++pos_args)
-        (*func)(config, arg);
+        (*func)(config, arg, true);
 }
 
 
@@ -305,7 +304,6 @@ static void check_convert_value(jvParsingConfig* config, jvArgument* arg, bool i
     }
     if (arg->need_value) {
         if (arg->allowed_values) {
-            StrView values = StrView_make(arg->allowed_values);
             bool is_allowed = is_in_space_delimited_list(StrView_make(arg->value), arg->allowed_values);
             
             if (!is_allowed)
@@ -355,7 +353,8 @@ static void check_convert_value(jvParsingConfig* config, jvArgument* arg, bool i
 }
 
 
-static void set_actual_need_value(jvParsingConfig* config, jvArgument* arg) {
+static void set_actual_need_value(jvParsingConfig* config, jvArgument* arg, bool is_pos_arg) {
+    (void)config; (void)is_pos_arg;
     arg->need_value = arg->need_value || arg->is_int || arg->is_float || arg->is_bool || (arg->allowed_values != NULL);
 }
 
@@ -417,13 +416,7 @@ void jvcmd_parse_arguments(int argc, char** argv, jvParsingConfig config) {
     if (argument_pos < config.nb_pos_args_required)
         jvcmd_exit_with_error(&config, "At least %d positional arguments are required, but you gave %d arguments.", config.nb_pos_args_required, argument_pos);
     
-    jvArgument* const* options = config.options;
-    for (jvArgument* option; (option = *options) != NULL; ++options)
-        check_convert_value(&config, option, /* is_pos_args = */ false);
-        
-    jvArgument* const* pos_args = config.pos_args;
-    for (jvArgument* arg; (arg = *pos_args) != NULL; ++pos_args)
-        check_convert_value(&config, arg, /* is_pos_args = */ true);
+    for_all_arguments(&config, &check_convert_value);
 }
 
 

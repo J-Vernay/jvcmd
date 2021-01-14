@@ -5,8 +5,8 @@
 
 int main(int argc, char** argv) {
 
-    jvArgument integer_option = { "int", "Values are considered as int.", 'i' };
-    jvArgument sentence_option = { "sentence", "Will print a sentence instead of the raw result.", 's' };
+    jvArgument integer_option = { "int", "Values are considered as int.", .short_name = 'i' };
+    jvArgument sentence_option = { "sentence", "Will print a sentence instead of the raw result.", .short_name = 's' };
 
     jvArgument operation =    { "operation", "Operation evaluated on left and right values.",
                                   .allowed_values = "add sub mult div" };
